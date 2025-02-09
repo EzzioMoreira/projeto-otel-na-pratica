@@ -4,6 +4,7 @@
 package app
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/api"
@@ -12,6 +13,7 @@ import (
 	planhttp "github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/handler/http"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store/memory"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 )
 
@@ -21,8 +23,10 @@ type Plan struct {
 	Store       store.Plan
 }
 
-func NewPlan(*config.Plans) *Plan {
-	store := memory.NewPlanStore()
+func NewPlan(ctx context.Context, _ *config.Plans) *Plan {
+	ctx, span := otel.Tracer("plan").Start(ctx, "NewPlan")
+	defer span.End()
+	store := memory.NewPlanStore(ctx)
 	return &Plan{
 		Handler:     planhttp.NewPlanHandler(store),
 		GRPCHandler: grpchandler.NewPlanServer(store),

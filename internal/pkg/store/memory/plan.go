@@ -8,13 +8,16 @@ import (
 
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/model"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store"
+	"go.opentelemetry.io/otel"
 )
 
 type inMemoryPlan struct {
 	store map[string]*model.Plan
 }
 
-func NewPlanStore() store.Plan {
+func NewPlanStore(ctx context.Context) store.Plan {
+	_, span := otel.Tracer("plan").Start(ctx, "NewPlanStore")
+	defer span.End()
 	return &inMemoryPlan{
 		store: make(map[string]*model.Plan),
 	}
